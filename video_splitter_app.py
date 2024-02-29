@@ -1,7 +1,6 @@
 import streamlit as st
 import math
 import os
-from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from moviepy.editor import VideoFileClip
 
 def cleanup_temp_files():
@@ -29,9 +28,9 @@ def split_video(video_path, segment_length=59):
     for segment in range(total_segments):
         start_time = segment * segment_length
         end_time = min((segment + 1) * segment_length, duration)
+        current_segment = video.subclip(start_time, end_time)
         output_filename = f"temp_video_segment_{segment+1}.mp4"
-        # Use moviepy to split the video
-        ffmpeg_extract_subclip(video_path, start_time, end_time, targetname=output_filename)
+        current_segment.write_videofile(output_filename, codec="libx264", audio_codec="aac")
         output_files.append(output_filename)
         
         progress_bar.progress((segment + 1) / total_segments)
