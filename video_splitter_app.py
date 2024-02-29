@@ -1,7 +1,8 @@
 import streamlit as st
 import math
 import os
-import subprocess
+from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+from moviepy.editor import VideoFileClip
 
 def cleanup_temp_files():
     """
@@ -12,12 +13,12 @@ def cleanup_temp_files():
                 os.remove(file)
 
 def split_video(video_path, segment_length=59):
-    # Use ffmpeg to get the duration of the video
-    cmd = ['ffprobe', '-v', 'error', '-show_entries', 
-           'format=duration', '-of', 
-           'default=noprint_wrappers=1:nokey=1', video_path]
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    duration = float(result.stdout)
+    # Cleanup any previous temporary files
+    cleanup_temp_files()
+    
+    # Use moviepy to get the duration of the video
+    video = VideoFileClip(video_path)
+    duration = video.duration
     total_segments = math.ceil(duration / segment_length)
 
     output_files = []
@@ -27,16 +28,16 @@ def split_video(video_path, segment_length=59):
     
     for segment in range(total_segments):
         start_time = segment * segment_length
+        end_time = min((segment + 1) * segment_length, duration)
         output_filename = f"temp_video_segment_{segment+1}.mp4"
-        # Construct ffmpeg command for splitting the video
-        cmd = ['ffmpeg', '-y', '-i', video_path, '-ss', str(start_time), '-t', str(segment_length), 
-               '-c:v', 'libx264', '-c:a', 'aac', '-strict', '-2', output_filename]
-        subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # Use moviepy to split the video
+        ffmpeg_extract_subclip(video_path, start_time, end_time, targetname=output_filename)
         output_files.append(output_filename)
         
         progress_bar.progress((segment + 1) / total_segments)
     
     return output_files
+
 
 st.title('Video Splitter App')
 
