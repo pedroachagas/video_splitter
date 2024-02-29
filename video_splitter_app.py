@@ -8,7 +8,7 @@ def cleanup_temp_files():
     Delete temporary files starting with a specific prefix in the given directory.
     """
     for file in os.listdir():
-        if file.startswith("temp_video") or file.startswith("temp_video_segment"):
+        if file.startswith("temp_video_segment"):
                 os.remove(file)
 
 def split_video(video_path, segment_length=59):
