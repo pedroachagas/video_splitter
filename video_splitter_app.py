@@ -9,7 +9,7 @@ def cleanup_temp_files():
     """
     for file in os.listdir():
         if file.startswith("temp_video_segment"):
-                os.remove(file)
+            os.remove(file)
 
 def split_video(video_path, segment_length=59):
     # Cleanup any previous temporary files
@@ -37,7 +37,6 @@ def split_video(video_path, segment_length=59):
     
     return output_files
 
-
 st.title('Video Splitter App')
 
 uploaded_file = st.file_uploader("Choose a video file", type=['mp4'])
@@ -51,11 +50,13 @@ if uploaded_file is not None:
     
     if st.button('Split Video'):
         output_files = split_video(video_path, segment_length)
-        
-        # Display links or download buttons for the output files
-        for file_path in output_files:
-            with open(file_path, "rb") as file:
-                st.download_button(label=f"Download {os.path.basename(file_path)}",
-                                   data=file,
-                                   file_name=os.path.basename(file_path),
-                                   mime="video/mp4")
+        st.session_state.output_files = output_files  # Store output files in session state
+
+# Check if there are any output files stored in session state and create download buttons for them
+if 'output_files' in st.session_state:
+    for file_path in st.session_state.output_files:
+        with open(file_path, "rb") as file:
+            st.download_button(label=f"Download {os.path.basename(file_path)}",
+                               data=file,
+                               file_name=os.path.basename(file_path),
+                               mime="video/mp4")
