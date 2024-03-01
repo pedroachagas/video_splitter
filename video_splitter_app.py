@@ -18,7 +18,7 @@ def cleanup_temp_files(prefix):
         if file.startswith(prefix):
             os.remove(file)
 
-@st.cache(allow_output_mutation=True, show_spinner=True)
+@st.cache_data(persist=True, show_spinner=True)
 def split_video(video_path, segment_length=59):
     prefix = f"temp_video_segment_{session_id}_"
     cleanup_temp_files(prefix)
@@ -55,6 +55,8 @@ if uploaded_file is not None:
         st.session_state['output_files'] = output_files
 
 if 'output_files' in st.session_state:
+    st.divider()
+    st.subheader('Download Segments')
     for file_path in st.session_state['output_files']:
         if os.path.exists(file_path):
             with open(file_path, "rb") as file:
